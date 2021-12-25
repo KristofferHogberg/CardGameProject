@@ -1,0 +1,55 @@
+﻿@page "/CardDeck"
+
+@inject HttpClient client
+
+<h3>Card Deck</h3>
+
+<div>
+
+    <img src="https://api.trafikinfo.trafikverket.se/v2/Images/TrafficFlowCamera_39626500.Jpeg" alt="Girl in a jacket">
+
+
+</div>
+
+<div>
+    <button class="btn btn-primary" @onclick="OnInitializedAsync">Draw a card from the deck</button>
+</div>
+
+@if (cardDeckResults is null)
+{
+    <div class="h2">@errorString</div>
+}
+else
+{
+    <div>
+
+
+        @foreach (var card in cardDeckResults.Cards)
+        {
+            <img src="@card.Images.Png" alt="card" />
+        }
+    </div>
+    errorString = null;
+}
+
+@code {
+    string errorString;
+    CardDeckModel cardDeckResults;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://deckofcardsapi.com/api/deck/new/draw/?count=1");
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            cardDeckResults = await response.Content.ReadFromJsonAsync<CardDeckModel>();
+            errorString = null;
+        }
+        {
+            errorString = $"An error has occured: {response.ReasonPhrase}";
+        }
+    }
+
+}
+
